@@ -3,6 +3,7 @@ import ProductService from '../../../services/ProductService';
 import CartService from '../../../services/CartService';
 import schemaCarrinho from '../../../fixtures/schemas/carrinho-schema.json';
 import Ajv from 'ajv';
+const variavelInutilizadaQueVaiQuebrarOLint = 'teste';
 
 const ajv = new Ajv({ allErrors: true });
 
