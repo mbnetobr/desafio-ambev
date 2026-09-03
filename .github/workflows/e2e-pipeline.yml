@@ -55,7 +55,7 @@ jobs:
           name: mochawesome-report-api
           path: cypress/reports/
 
-  # 3. TESTES DE FRONTEND EM MATRIZ MULTI-BROWSER (Executa somente após os testes de API passarem)
+  # 3. TESTES DE FRONTEND EM MATRIZ MULTI-BROWSER (Chrome, Edge, Electron no Linux)
   test-frontend:
     name: Frontend (${{ matrix.browser }})
     needs: test-api
@@ -85,4 +85,32 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mochawesome-report-frontend-${{ matrix.browser }}
+          path: cypress/reports/
+
+  # 4. TESTE DE FRONTEND - FIREFOX (Isolado no Windows para evitar o bug do Linux CDP)
+  test-firefox:
+    name: Frontend (firefox - windows)
+    needs: test-api
+    runs-on: windows-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar Testes de Frontend (Firefox)
+        run: npx cypress run --spec 'cypress/e2e/features/frontend/**/*.feature' --browser firefox
+
+      - name: Publicar Relatório Mochawesome (Frontend - firefox)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mochawesome-report-frontend-firefox
           path: cypress/reports/
