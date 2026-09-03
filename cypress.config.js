@@ -22,7 +22,15 @@ module.exports = defineConfig({
         })
       );
 
-      // 3. Relatório Mochawesome
+      // 3. Tratamento para estabilizar o Firefox no ambiente Headless do CI
+      on('before:browser:launch', (browser = {}, launchOptions) => {
+        if (browser.name === 'firefox' && browser.isHeadless) {
+          launchOptions.args.push('--headless');
+        }
+        return launchOptions;
+      });
+
+      // 4. Relatório Mochawesome
       require("cypress-mochawesome-reporter/plugin")(on);
 
       return config;
