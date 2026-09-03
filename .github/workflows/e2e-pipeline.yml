@@ -78,7 +78,7 @@ jobs:
         run: npm ci
 
       - name: Executar Testes de Frontend
-        run: npm run test:frontend -- --browser ${{ matrix.browser }}
+        run: npx cypress run --spec 'cypress/e2e/features/frontend/**/*.feature' --browser ${{ matrix.browser }}
 
       - name: Publicar Relatório Mochawesome (Frontend - ${{ matrix.browser }})
         if: always()
