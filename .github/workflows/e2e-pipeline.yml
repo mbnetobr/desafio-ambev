@@ -7,8 +7,8 @@ on:
     branches: [ main, master ]
 
 jobs:
-  lint:
-    name: Executar Linter
+  setup:
+    name: Setup & Instalar Dependências
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
@@ -17,11 +17,41 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: 24
 
-      - name: Instalar dependências
+      - name: Cache Node Modules e Cypress Binary
+        id: cache-deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/Cypress
+            node_modules
+          key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json') }}
+
+      - name: Instalar dependências (caso não esteja em cache)
+        if: steps.cache-deps.outputs.cache-hit != 'true'
         run: npm ci
+
+  lint:
+    name: Executar Linter
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Restaurar Cache de Dependências
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/Cypress
+            node_modules
+          key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json') }}
 
       - name: Linter
         run: npm run lint
@@ -37,11 +67,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: 24
 
-      - name: Instalar dependências
-        run: npm ci
+      - name: Restaurar Cache de Dependências
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/Cypress
+            node_modules
+          key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json') }}
 
       - name: Executar Testes de API
         run: npm run test:api
@@ -64,11 +98,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: 24
 
-      - name: Instalar dependências
-        run: npm ci
+      - name: Restaurar Cache de Dependências
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/Cypress
+            node_modules
+          key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json') }}
 
       - name: Executar Testes de Frontend
         run: npm run test:frontend
