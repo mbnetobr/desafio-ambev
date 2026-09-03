@@ -7,7 +7,8 @@ on:
     branches: [ main, master ]
 
 jobs:
-  cypress-run:
+  lint:
+    name: Executar Linter
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
@@ -22,15 +23,59 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
-      - name: Executar Linter
+      - name: Linter
         run: npm run lint
 
-      - name: Executar Suíte de Testes
-        run: npm run test:all
+  test-api:
+    name: Suíte de Testes - API
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
 
-      - name: Publicar Relatório Mochawesome
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar Testes de API
+        run: npm run test:api
+
+      - name: Publicar Relatório Mochawesome (API)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mochawesome-report
+          name: mochawesome-report-api
+          path: cypress/reports/
+
+  test-frontend:
+    name: Suíte de Testes - Frontend
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar Testes de Frontend
+        run: npm run test:frontend
+
+      - name: Publicar Relatório Mochawesome (Frontend)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mochawesome-report-frontend
           path: cypress/reports/
