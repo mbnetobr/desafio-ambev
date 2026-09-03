@@ -1,10 +1,10 @@
-# 🚀 Suite de Automação de Testes E2E & API — ServeRest
+# Suite de Automação de Testes E2E & API — ServeRest
 
 Este repositório contém a solução completa de testes automatizados para a plataforma **ServeRest** (API e Frontend Web), utilizando **Cypress v13**, **Cucumber (BDD)**, **Page Object Model (POM)**, **AJV Schema Validation** e integração contínua via **GitHub Actions**.
 
 ---
 
-## 🏗️ Arquitetura e Padrões de Projeto
+## Arquitetura e Padrões de Projeto
 
 A arquitetura do projeto foi desenvolvida focando em manutenibilidade, alta performance e reuso de código:
 
@@ -58,43 +58,36 @@ ambev/
 ├── .eslintrc.json
 ├── cypress.config.js                # Configuração Principal do Cypress
 └── package.json                     # Scripts e Dependências Node
+```
+## Tecnologias Utilizadas
 
-🛠️ Tecnologias Utilizadas
-Cypress v13: Framework principal de automação.
+- Cypress v13: Framework principal de automação.
+- @badeball/cypress-cucumber-preprocessor: Suporte ao BDD / Gherkin.
+- @bahmutov/cypress-esbuild-preprocessor: Compilação ultra-rápida das features.
+- AJV: Validador de JSON Schema para testes de contrato.
+- @faker-js/faker: Geração dinâmica de massa de dados.
+- Mochawesome Reporter: Relatórios HTML interativos e consolidados.
+- GitHub Actions: Execução automatizada e publicação dos artefatos de teste em CI/CD.
 
-@badeball/cypress-cucumber-preprocessor: Suporte ao BDD / Gherkin.
+## Como Executar o Projeto Localmente
 
-@bahmutov/cypress-esbuild-preprocessor: Compilação ultra-rápida das features.
+- Clonar o repositório e instalar as dependências
+- git clone [https://github.com/mbnetobr/desafio-ambev.git](https://github.com/mbnetobr/desafio-ambev.git)
+- cd desafio-ambev
+- npm install
 
-AJV: Validador de JSON Schema para testes de contrato.
+## Comandos:
 
-@faker-js/faker: Geração dinâmica de massa de dados.
+- npm run cypress:open -- abre o Cypress Runner no modo interativo (UI).
+- npm run test:api -- executa apenas os testes de API (Headless).
+- npm run test:frontend -- executa apenas os testes Frontend E2E (Headless).
+- npm run test:all -- executa toda a suíte de testes (API + Frontend) e gera relatórios.
+- npm run lint -- Executa a análise estática do código com o ESLint.
 
-Mochawesome Reporter: Relatórios HTML interativos e consolidados.
+## Esteira de CI/CD (GitHub Actions)
 
-GitHub Actions: Execução automatizada e publicação dos artefatos de teste em CI/CD.
-
-⚡ Como Executar o Projeto Localmente
-1. Clonar o repositório e instalar as dependências
-Bash
-git clone [https://github.com/mbnetobr/desafio-ambev.git](https://github.com/mbnetobr/desafio-ambev.git)
-cd desafio-ambev
-npm install
-
-Comandos:
-npm run cypress:open,Abre o Cypress Runner no modo interativo (UI).
-npm run test:api,Executa apenas os testes de API (Headless).
-npm run test:frontend,Executa apenas os testes Frontend E2E (Headless).
-npm run test:all,Executa toda a suíte de testes (API + Frontend) e gera relatórios.
-npm run lint,Executa a análise estática do código com o ESLint.
-
-🔄 Esteira de CI/CD (GitHub Actions)
-A cada push ou pull_request enviado para as branches main ou master, o GitHub Actions dispara automaticamente o pipeline (e2e-pipeline.yml), realizando:
-
-Instalação limpa do ambiente e dependências (npm ci).
-
-Validação do código estático (npm run lint).
-
-Execução completa da suíte de testes (npm run test:all).
-
-Publicação dos relatórios do Mochawesome como Artefatos da Action.
+- A cada push ou pull_request enviado para as branches main ou master, o GitHub Actions dispara automaticamente o pipeline (e2e-pipeline.yml), realizando:
+- Instalação limpa do ambiente e dependências (npm ci).
+- Validação do código estático (npm run lint).
+- Execução completa da suíte de testes (npm run test:all).
+- Publicação dos relatórios do Mochawesome como Artefatos da Action.
