@@ -27,7 +27,7 @@ jobs:
       - name: Executar Linter
         run: npm run lint
 
-  # 2. TESTES DE API (Executa em paralelo, independente de browser)
+  # 2. TESTES DE API (Executa após o Lint passar)
   test-api:
     name: Suíte de Testes - API
     needs: lint
@@ -55,15 +55,15 @@ jobs:
           name: mochawesome-report-api
           path: cypress/reports/
 
-  # 3. TESTES DE FRONTEND EM MATRIZ MULTI-BROWSER
+  # 3. TESTES DE FRONTEND EM MATRIZ MULTI-BROWSER (Executa somente após os testes de API passarem)
   test-frontend:
     name: Frontend (${{ matrix.browser }})
-    needs: lint
+    needs: test-api
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        browser: [chrome, electron, edge]
+        browser: [chrome, edge, electron]
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
@@ -78,7 +78,7 @@ jobs:
         run: npm ci
 
       - name: Executar Testes de Frontend
-        run: npx cypress run --browser ${{ matrix.browser }} --env grepTags=@frontend # ou o comando configurado no package.json adaptado para aceitar a flag --browser
+        run: npm run test:frontend -- --browser ${{ matrix.browser }}
 
       - name: Publicar Relatório Mochawesome (Frontend - ${{ matrix.browser }})
         if: always()
