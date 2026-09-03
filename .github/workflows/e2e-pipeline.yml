@@ -63,7 +63,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        browser: [chrome, firefox, edge]
+        browser: [chrome, electron, edge]
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
