@@ -7,11 +7,12 @@ on:
     branches: [ main, master ]
 
 jobs:
-  e2e-tests:
-    name: Execução de Testes E2E
+  # 1. LINT (Quality Gate Inicial - Bloqueia o avanço em caso de falha)
+  lint:
+    name: Executar Linter
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout do código
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -23,18 +24,61 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
-      - name: Linter
+      - name: Executar Linter
         run: npm run lint
 
-      - name: Testes de API
+  # 2. TESTES DE API (Inicia em paralelo com o Frontend assim que o Lint passa)
+  test-api:
+    name: Suíte de Testes - API
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar Testes de API
         run: npm run test:api
 
-      - name: Testes de Frontend
-        run: npm run test:frontend
-
-      - name: Publicar Relatório Mochawesome
+      - name: Publicar Relatório Mochawesome (API)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mochawesome-report
+          name: mochawesome-report-api
+          path: cypress/reports/
+
+  # 3. TESTES DE FRONTEND (Inicia em paralelo com a API assim que o Lint passa)
+  test-frontend:
+    name: Suíte de Testes - Frontend
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar Testes de Frontend
+        run: npm run test:frontend
+
+      - name: Publicar Relatório Mochawesome (Frontend)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mochawesome-report-frontend
           path: cypress/reports/
