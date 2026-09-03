@@ -55,17 +55,17 @@ jobs:
           name: mochawesome-report-api
           path: cypress/reports/
 
-  # 3. TESTES DE FRONTEND EM MATRIZ MULTI-BROWSER VIA DOCKER (Com tag completa -browsers)
+  # 3. TESTES DE FRONTEND EM MATRIZ MULTI-BROWSER VIA DOCKER (Chrome, Edge, Electron)
   test-frontend:
     name: Frontend (${{ matrix.browser }})
     needs: test-api
     runs-on: ubuntu-latest
     container:
-      image: cypress/included:13.17.0-browsers
+      image: cypress/included:13.17.0
     strategy:
       fail-fast: false
       matrix:
-        browser: [chrome, firefox, edge, electron]
+        browser: [chrome, edge, electron]
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
