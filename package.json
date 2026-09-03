@@ -8,9 +8,8 @@
     "lint:fix": "eslint . --ext .js --fix",
     "format": "prettier --write \"**/*.{js,json,md,feature}\"",
     "cypress:open": "cypress open",
-    "cypress:run": "cypress run",
-    "test:api": "cypress run --env tags=\"@api\"",
-    "test:e2e": "cypress run --env tags=\"@frontend\"",
+    "test:api": "cypress run --spec 'cypress/e2e/features/api/**/*.feature'",
+    "test:frontend": "cypress run --spec 'cypress/e2e/features/frontend/**/*.feature'",
     "test:all": "cypress run",
     "report:generate": "cypress run --reporter mochawesome"
   },
