@@ -9,7 +9,7 @@
     "format": "prettier --write \"**/*.{js,json,md,feature}\"",
     "cypress:open": "cypress open",
     "test:api": "cypress run --spec 'cypress/e2e/features/api/**/*.feature'",
-    "test:frontend": "cypress run --spec 'cypress/e2e/features/frontend/**/*.feature'",
+    "test:frontend": "cypress run --spec 'cypress/e2e/features/frontend/**/*.feature' --browser ${{ matrix.browser }}",
     "test:all": "cypress run",
     "report:generate": "cypress run --reporter mochawesome"
   },
