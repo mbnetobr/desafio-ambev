@@ -82,3 +82,27 @@ jobs:
         with:
           name: mochawesome-report-frontend-${{ matrix.browser }}
           path: cypress/reports/
+
+  # 4. TESTES DE PERFORMANCE (Executa após o sucesso da matriz multi-browser de frontend)
+  test-performance:
+    name: Testes de Performance
+    needs: test-frontend
+    runs-on: ubuntu-latest
+    container:
+      image: cypress/included:13.17.0
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar Testes de Performance
+        run: npx cypress run --spec 'cypress/e2e/features/performance/**/*.feature' --browser chrome
+
+      - name: Publicar Relatório Mochawesome (Performance)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mochawesome-report-performance
+          path: cypress/reports/
