@@ -7,165 +7,34 @@ on:
     branches: [ main, master ]
 
 jobs:
-  # 1. STEP/JOB DE SETUP E DEPENDÊNCIAS (Roda uma única vez)
-  setup:
-    name: Setup & Cache Dependências
+  e2e-tests:
+    name: Execução de Testes E2E
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout do código
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: 'npm'
 
-      - name: Cache Node Modules e Cypress Binary
-        id: cache-deps
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/Cypress
-            node_modules
-          key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json') }}
-
-      - name: Instalar dependências (caso não esteja em cache)
-        if: steps.cache-deps.outputs.cache-hit != 'true'
+      - name: Instalar dependências
         run: npm ci
-
-  # 2. JOB DE LINTER
-  lint:
-    name: Executar Linter
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout do código
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Restaurar Cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/Cypress
-            node_modules
-          key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json') }}
 
       - name: Linter
         run: npm run lint
 
-  # 3. TESTES DE API (Execução em Paralelo)
-  test-api:
-    name: Suíte de Testes - API
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout do código
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Restaurar Cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/Cypress
-            node_modules
-          key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json') }}
-
-      - name: Executar Testes de API
+      - name: Testes de API
         run: npm run test:api
 
-      - name: Upload Resultados Brutos da API
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: raw-results-api
-          path: cypress/reports/
-          retention-days: 1
-
-  # 4. TESTES DE FRONTEND (Execução em Paralelo)
-  test-frontend:
-    name: Suíte de Testes - Frontend
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout do código
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Restaurar Cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/Cypress
-            node_modules
-          key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json') }}
-
-      - name: Executar Testes de Frontend
+      - name: Testes de Frontend
         run: npm run test:frontend
 
-      - name: Upload Resultados Brutos do Frontend
+      - name: Publicar Relatório Mochawesome
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: raw-results-frontend
+          name: mochawesome-report
           path: cypress/reports/
-          retention-days: 1
-
-  # 5. JOB ISOLADO FINAL: GERAR E PUBLICAR RELATÓRIO CONSOLIDADO
-  generate-reports:
-    name: Consolidar Relatórios de Teste
-    needs: [test-api, test-frontend, lint]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout do código
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Restaurar Cache de Dependências
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/Cypress
-            node_modules
-          key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json') }}
-
-      - name: Baixar Resultados da API
-        uses: actions/download-artifact@v4
-        with:
-          name: raw-results-api
-          path: cypress/reports/api
-
-      - name: Baixar Resultados do Frontend
-        uses: actions/download-artifact@v4
-        with:
-          name: raw-results-frontend
-          path: cypress/reports/frontend
-
-      - name: Consolidar e Publicar Relatório Final Mochawesome
-        run: |
-          npx mochawesome-merge "cypress/reports/**/*.json" > cypress/reports/full-report.json
-          npx marge cypress/reports/full-report.json --reportDir cypress/reports/consolidated --inline
-
-      - name: Publicar Relatório Final Consolidado
-        uses: actions/upload-artifact@v4
-        with:
-          name: mochawesome-consolidated-report
-          path: cypress/reports/consolidated/
