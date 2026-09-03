@@ -9,7 +9,7 @@ on:
 jobs:
   # 1. LINT (Quality Gate Inicial - Bloqueia o avanço em caso de falha)
   lint:
-    name: Executar Linter
+    name: Linter - Análise de Código
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
@@ -57,7 +57,7 @@ jobs:
 
   # 3. TESTES DE FRONTEND EM MATRIZ MULTI-BROWSER VIA DOCKER (Chrome, Edge, Electron)
   test-frontend:
-    name: Frontend (${{ matrix.browser }})
+    name: Suite de Testes - Frontend (${{ matrix.browser }})
     needs: test-api
     runs-on: ubuntu-latest
     strategy:
@@ -89,7 +89,7 @@ jobs:
 
   # 4. TESTES DE PERFORMANCE (Executa após o sucesso da matriz multi-browser de frontend)
   test-performance:
-    name: Testes de Performance
+    name: Suite de Testes - Performance
     needs: test-frontend
     runs-on: ubuntu-latest
     steps:
