@@ -22,7 +22,7 @@ jobs:
           cache: 'npm'
 
       - name: Instalar dependências
-        run: npm ci
+        run: npm ci --no-audit --fund --loglevel error
 
       - name: Executar Linter
         run: npm run lint
@@ -43,7 +43,7 @@ jobs:
           cache: 'npm'
 
       - name: Instalar dependências
-        run: npm ci
+        run: npm ci --no-audit --fund --loglevel error
 
       - name: Executar Testes de API
         run: npm run test:api
@@ -75,7 +75,7 @@ jobs:
           cache: 'npm'
 
       - name: Instalar dependências
-        run: npm ci
+        run: npm ci --no-audit --fund --loglevel error
 
       - name: Executar Testes de Frontend
         run: npx cypress run --spec 'cypress/e2e/features/frontend/**/*.feature' --browser ${{ matrix.browser }}
@@ -103,7 +103,7 @@ jobs:
           cache: 'npm'
 
       - name: Instalar dependências
-        run: npm ci
+        run: npm ci --no-audit --fund --loglevel error
 
       - name: Executar Testes de Performance
         run: npx cypress run --spec 'cypress/e2e/features/performance/**/*.feature' --browser chrome
