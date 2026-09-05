@@ -48,12 +48,15 @@ jobs:
       - name: Executar Testes de API
         run: npm run test:api
 
-      - name: Publicar Relatório Mochawesome (API)
+      - name: Publicar Relatório, Screenshots e Vídeos (API)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mochawesome-report-api
-          path: cypress/reports/
+          path: |
+            cypress/reports/
+            cypress/screenshots/
+            cypress/videos/
 
   # 3. TESTES DE FRONTEND EM MATRIZ MULTI-BROWSER VIA DOCKER (Chrome, Edge, Electron)
   test-frontend:
@@ -80,12 +83,15 @@ jobs:
       - name: Executar Testes de Frontend
         run: npx cypress run --spec 'cypress/e2e/features/frontend/**/*.feature' --browser ${{ matrix.browser }}
 
-      - name: Publicar Relatório Mochawesome (Frontend - ${{ matrix.browser }})
+      - name: Publicar Relatório, Screenshots e Vídeos (Frontend - ${{ matrix.browser }})
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mochawesome-report-frontend-${{ matrix.browser }}
-          path: cypress/reports/
+          path: |
+            cypress/reports/
+            cypress/screenshots/
+            cypress/videos/
 
   # 4. TESTES VISUAIS COM PERCY (Executa após a matrix de frontend e antes da performance)
   test-visual:
@@ -110,6 +116,15 @@ jobs:
         env:
           PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
 
+      - name: Publicar Screenshots e Vídeos (Visual Percy)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-artifacts-visual
+          path: |
+            cypress/screenshots/
+            cypress/videos/
+
   # 5. TESTES DE PERFORMANCE (Executa após os testes visuais do Percy)
   test-performance:
     name: Suite de Testes - Performance
@@ -131,9 +146,12 @@ jobs:
       - name: Executar Testes de Performance
         run: npx cypress run --spec 'cypress/e2e/features/performance/**/*.feature' --browser chrome
 
-      - name: Publicar Relatório Mochawesome (Performance)
+      - name: Publicar Relatório, Screenshots e Vídeos (Performance)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mochawesome-report-performance
-          path: cypress/reports/
+          path: |
+            cypress/reports/
+            cypress/screenshots/
+            cypress/videos/

@@ -21,5 +21,5 @@ When('submeter o cadastro', function () {
 });
 
 Then('devo ver a mensagem de sucesso {string} na interface', function (mensagemEsperada) {
-  CadastroPage.alertMensagem.should('contain.text', mensagemEsperada);
+  CadastroPage.alertMensagem.should('contain.text', mensagemEsperad);
 });

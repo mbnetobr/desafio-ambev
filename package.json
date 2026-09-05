@@ -4,6 +4,10 @@
   "description": "Suíte de testes automatizados E2E e API utilizando Cypress, BDD, TSPC e JSON Schema para o desafio ServeRest.",
   "main": "index.js",
   "scripts": {
+    "test:e2e": "npx cypress run",
+    "report:clean": "rimraf cypress/reports cypress/videos cypress/screenshots",
+    "test:clear-and-run": "npm run report:clean && npm run test:e2e",
+    "report:serve": "npx serve cypress/reports",
     "lint": "eslint . --ext .js",
     "lint:fix": "eslint . --ext .js --fix",
     "format": "prettier --write \"**/*.{js,json,md,feature}\"",
@@ -33,13 +37,14 @@
     "@percy/cypress": "^3.1.9",
     "ajv": "^8.12.0",
     "cypress": "^13.17.0",
-    "cypress-mochawesome-reporter": "^3.8.0",
+    "cypress-mochawesome-reporter": "^3.8.4",
     "cypress-performance": "^1.5.3",
     "eslint": "^8.56.0",
     "eslint-plugin-cypress": "^2.15.1",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
-    "prettier": "^3.2.5"
+    "prettier": "^3.2.5",
+    "rimraf": "^6.1.3"
   },
   "type": "commonjs"
 }
