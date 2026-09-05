@@ -87,10 +87,33 @@ jobs:
           name: mochawesome-report-frontend-${{ matrix.browser }}
           path: cypress/reports/
 
-  # 4. TESTES DE PERFORMANCE (Executa após o sucesso da matriz multi-browser de frontend)
+  # 4. TESTES VISUAIS COM PERCY (Executa após a matrix de frontend e antes da performance)
+  test-visual:
+    name: Suite de Testes - Visuais (Percy)
+    needs: test-frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci --no-audit --fund --loglevel error
+
+      - name: Executar Testes Visuais com Percy
+        run: npx percy exec -- npx cypress run --spec 'cypress/e2e/features/visual/**/*.feature'
+        env:
+          PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+
+  # 5. TESTES DE PERFORMANCE (Executa após os testes visuais do Percy)
   test-performance:
     name: Suite de Testes - Performance
-    needs: test-frontend
+    needs: test-visual
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
