@@ -36,6 +36,7 @@ async function run() {
 
     const nowNano = Date.now() * 1000000;
 
+    // Usando nomes que evitam a inferencia automatica de _ratio pelo ecossistema OTLP/Prometheus
     const otlpPayload = {
       resourceMetrics: [
         {
@@ -43,25 +44,25 @@ async function run() {
             {
               metrics: [
                 {
-                  name: "serverest_tests_total",
+                  name: "serverest_tests_total_count",
                   description: "Total de testes executados na CI",
-                  unit: "1",
+                  unit: "{tests}",
                   gauge: {
                     dataPoints: [{ asInt: totalTests, timeUnixNano: nowNano, attributes: [{ key: "environment", value: { stringValue: "ci" } }] }]
                   }
                 },
                 {
-                  name: "serverest_tests_passed",
+                  name: "serverest_tests_passed_count",
                   description: "Total de testes com sucesso na CI",
-                  unit: "1",
+                  unit: "{tests}",
                   gauge: {
                     dataPoints: [{ asInt: totalPassed, timeUnixNano: nowNano, attributes: [{ key: "environment", value: { stringValue: "ci" } }] }]
                   }
                 },
                 {
-                  name: "serverest_tests_failures",
+                  name: "serverest_tests_failures_count",
                   description: "Total de falhas nos testes na CI",
-                  unit: "1",
+                  unit: "{tests}",
                   gauge: {
                     dataPoints: [{ asInt: totalFailures, timeUnixNano: nowNano, attributes: [{ key: "environment", value: { stringValue: "ci" } }] }]
                   }
@@ -75,10 +76,9 @@ async function run() {
 
     const endpointUrl = "https://otlp-gateway-prod-sa-east-1.grafana.net/otlp/v1/metrics";
     const apiKey = process.env.GRAFANA_TOKEN || "";
-    // O Grafana OTLP aceita autenticação básica onde o usuário é o ID (1819630) e a senha é o token glc_...
     const credentials = Buffer.from(`1819630:${apiKey}`).toString("base64");
 
-    console.log("Enviando metricas OTLP para o Grafana Cloud...");
+    console.log("Enviando metricas OTLP ajustadas para o Grafana Cloud...");
     
     const response = await fetch(endpointUrl, {
       method: "POST",
