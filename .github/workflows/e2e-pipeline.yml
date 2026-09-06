@@ -160,7 +160,7 @@ jobs:
             cypress/videos/
             cypress/results/
 
-  # 6. ENVIAR MÉTRICAS PARA O GRAFANA CLOUD
+  # 6. ENVIAR MÉTRICAS PARA O GRAFANA CLOUD (Consolidado em Job Único)
   grafana-metrics:
     name: Publicar Métricas no Grafana
     needs: [test-api, test-frontend, test-visual, test-performance]
@@ -180,7 +180,7 @@ jobs:
         with:
           node-version: 24
 
-      - name: Enviar Resultados JUnit para o Grafana Cloud
+      - name: Enviar Resultados JUnit consolidados para o Grafana Cloud
         env:
           GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
           GRAFANA_TOKEN: ${{ secrets.GRAFANA_TOKEN }}
