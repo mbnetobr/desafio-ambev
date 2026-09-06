@@ -228,15 +228,15 @@ jobs:
                   serverest_tests_failures{environment="ci"} ${totalFailures}
                 `.trim();
 
-                const grafanaUrl = process.env.GRAFANA_URL;
-                const token = process.env.GRAFANA_TOKEN;
+                const grafanaUrl = (process.env.GRAFANA_URL || "").trim();
+                const token = (process.env.GRAFANA_TOKEN || "").trim();
 
                 if (!grafanaUrl || !token) {
                   console.log("Credenciais do Grafana ausentes. Pulando envio.");
                   return;
                 }
 
-                console.log("Enviando métricas para o Grafana Cloud...");
+                console.log("Enviando métricas para URL:", grafanaUrl);
                 
                 const response = await fetch(grafanaUrl, {
                   method: "POST",
