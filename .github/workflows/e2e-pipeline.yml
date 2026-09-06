@@ -222,6 +222,12 @@ jobs:
                 const totalPassed = totalTests - totalFailures;
                 console.log(`Métricas consolidadas -> Testes: ${totalTests}, Sucessos: ${totalPassed}, Falhas: ${totalFailures}`);
 
+                const metricsPayload = `
+                  serverest_tests_total{environment="ci"} ${totalTests}
+                  serverest_tests_passed{environment="ci"} ${totalPassed}
+                  serverest_tests_failures{environment="ci"} ${totalFailures}
+                `.trim();
+
                 const grafanaUrl = process.env.GRAFANA_URL;
                 const token = process.env.GRAFANA_TOKEN;
 
@@ -230,9 +236,26 @@ jobs:
                   return;
                 }
 
-                console.log("Processo estruturado para o Grafana Cloud concluído.");
+                console.log("Enviando métricas para o Grafana Cloud...");
+                
+                const response = await fetch(grafanaUrl, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "text/plain",
+                    "Authorization": `Bearer ${token}`
+                  },
+                  body: metricsPayload
+                });
+
+                if (response.ok) {
+                  console.log("Métricas enviadas com sucesso para o Grafana Cloud!");
+                } else {
+                  const errorText = await response.text();
+                  console.warn("Aviso ao enviar métricas:", response.status, errorText);
+                }
+
               } catch (error) {
-                console.error("Erro ao processar relatórios:", error);
+                console.error("Erro ao processar relatórios para o Grafana:", error);
                 process.exit(1);
               }
             }
