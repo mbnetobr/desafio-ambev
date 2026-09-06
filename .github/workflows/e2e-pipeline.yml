@@ -182,12 +182,9 @@ jobs:
 
       - name: Enviar Resultados JUnit para o Grafana Cloud
         env:
-          GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
-          GRAFANA_TOKEN: ${{ secrets.GRAFANA_TOKEN }}
+          CLEAN_GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
+          CLEAN_GRAFANA_TOKEN: ${{ secrets.GRAFANA_TOKEN }}
         run: |
-          CLEAN_URL=$(echo "${{ secrets.GRAFANA_URL }}" | tr -d '[:space:]')
-          CLEAN_TOKEN=$(echo "${{ secrets.GRAFANA_TOKEN }}" | tr -d '[:space:]')
-          
           node -e '
             const fs = require("fs");
             const path = require("path");
@@ -231,8 +228,8 @@ jobs:
                   serverest_tests_failures{environment="ci"} ${totalFailures}
                 `.trim();
 
-                const grafanaUrl = process.argv[1];
-                const token = process.argv[2];
+                const grafanaUrl = (process.env.CLEAN_GRAFANA_URL || "").replace(/[\r\n\s]+/g, "");
+                const token = (process.env.CLEAN_GRAFANA_TOKEN || "").replace(/[\r\n\s]+/g, "");
 
                 if (!grafanaUrl || !token) {
                   console.log("Credenciais do Grafana ausentes. Pulando envio.");
@@ -264,4 +261,4 @@ jobs:
             }
 
             run();
-          ' "$CLEAN_URL" "$CLEAN_TOKEN"
+          '
