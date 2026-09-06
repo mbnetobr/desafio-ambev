@@ -205,7 +205,7 @@ jobs:
             async function run() {
               try {
                 const xmlFiles = getAllFiles("all-artifacts");
-                console.log(`Encontrados ${xmlFiles.length} relatórios JUnit XML.`);
+                console.log("Encontrados " + xmlFiles.length + " relatorios JUnit XML.");
                 
                 let totalTests = 0;
                 let totalFailures = 0;
@@ -220,13 +220,11 @@ jobs:
                 });
 
                 const totalPassed = totalTests - totalFailures;
-                console.log(`Métricas consolidadas -> Testes: ${totalTests}, Sucessos: ${totalPassed}, Falhas: ${totalFailures}`);
+                console.log("Metricas consolidadas -> Testes: " + totalTests + ", Sucessos: " + totalPassed + ", Falhas: " + totalFailures);
 
-                const metricsPayload = `
-                  serverest_tests_total{environment="ci"} ${totalTests}
-                  serverest_tests_passed{environment="ci"} ${totalPassed}
-                  serverest_tests_failures{environment="ci"} ${totalFailures}
-                `.trim();
+                const metricsPayload = "serverest_tests_total{environment=\"ci\"} " + totalTests + "\n" +
+                                       "serverest_tests_passed{environment=\"ci\"} " + totalPassed + "\n" +
+                                       "serverest_tests_failures{environment=\"ci\"} " + totalFailures;
 
                 const rawUrl = process.env.GRAFANA_URL || "";
                 const rawToken = process.env.GRAFANA_TOKEN || "";
@@ -241,26 +239,26 @@ jobs:
                   return;
                 }
 
-                console.log("Enviando métricas para o endpoint do Prometheus Remote Write...");
+                console.log("Enviando metricas para o endpoint do Prometheus Remote Write...");
                 
                 const response = await fetch(grafanaUrl, {
                   method: "POST",
                   headers: {
                     "Content-Type": "text/plain",
-                    "Authorization": `Bearer ${token}`
+                    "Authorization": "Bearer " + token
                   },
                   body: metricsPayload
                 });
 
                 if (response.ok) {
-                  console.log("Métricas enviadas com sucesso para o Grafana Cloud!");
+                  console.log("Metricas enviadas com sucesso para o Grafana Cloud!");
                 } else {
                   const errorText = await response.text();
-                  console.warn("Aviso ao enviar métricas:", response.status, errorText);
+                  console.warn("Aviso ao enviar metricas:", response.status, errorText);
                 }
 
               } catch (error) {
-                console.error("Erro ao processar relatórios para o Grafana:", error);
+                console.error("Erro ao processar relatorios para o Grafana:", error);
                 process.exit(1);
               }
             }
