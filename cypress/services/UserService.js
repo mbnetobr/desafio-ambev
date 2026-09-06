@@ -18,6 +18,39 @@ class UserService {
       failOnStatusCode: false
     });
   }
+
+  listarUsuarios() {
+    return cy.request({
+      method: 'GET',
+      url: `${Cypress.env('apiUrl')}/usuarios`,
+      failOnStatusCode: false
+    });
+  }
+
+  buscarUsuarioPorId(id) {
+    return cy.request({
+      method: 'GET',
+      url: `${Cypress.env('apiUrl')}/usuarios/${id}`,
+      failOnStatusCode: false
+    });
+  }
+
+  deletarUsuario(id) {
+    return cy.request({
+      method: 'DELETE',
+      url: `${Cypress.env('apiUrl')}/usuarios/${id}`,
+      failOnStatusCode: false
+    });
+  }
+
+  editarUsuario(id, usuario) {
+    return cy.request({
+      method: 'PUT',
+      url: `${Cypress.env('apiUrl')}/usuarios/${id}`,
+      body: usuario,
+      failOnStatusCode: false
+    });
+  }
 }
 
 export default new UserService();
