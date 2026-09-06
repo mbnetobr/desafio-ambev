@@ -41,10 +41,11 @@ async function run() {
     const rawUrl = process.env.GRAFANA_URL || "";
     const rawToken = process.env.GRAFANA_TOKEN || "";
 
-    const grafanaUrl = rawUrl.replace(/[\r\n\s"'\\]+/g, "").trim();
-    const token = rawToken.replace(/[\r\n\s"'\\]+/g, "").trim();
+    // Mantém estritamente apenas caracteres válidos para URLs (Remove quebras de linha, espaços, aspas e lixo de secrets)
+    const grafanaUrl = (rawUrl.match(/https?:\/\/[^\s"'`<>]+/g) || [rawUrl])[0].trim();
+    const token = rawToken.replace(/[\r\n\s"'`<>]/g, "").trim();
 
-    console.log("Comprimento da URL lida:", grafanaUrl.length);
+    console.log("URL tratada com sucesso. Comprimento final:", grafanaUrl.length);
 
     if (!grafanaUrl || !token) {
       console.log("Credenciais do Grafana ausentes ou vazias. Pulando envio.");
