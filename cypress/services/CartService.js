@@ -1,5 +1,3 @@
-import ProductService from './ProductService';
-
 class CartService {
   cadastrarCarrinho(produtoId, quantidade, token) {
     return cy.request({
