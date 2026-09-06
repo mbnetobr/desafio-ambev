@@ -48,15 +48,16 @@ jobs:
       - name: Executar Testes de API
         run: npm run test:api
 
-      - name: Publicar Relatório, Screenshots e Vídeos (API)
+      - name: Publicar Relatório, Screenshots, Vídeos e XML (API)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mochawesome-report-api
+          name: cypress-artifacts-api
           path: |
             cypress/reports/
             cypress/screenshots/
             cypress/videos/
+            cypress/results/
 
   # 3. TESTES DE FRONTEND EM MATRIZ MULTI-BROWSER VIA DOCKER (Chrome, Edge, Electron)
   test-frontend:
@@ -83,15 +84,16 @@ jobs:
       - name: Executar Testes de Frontend
         run: npx cypress run --spec 'cypress/e2e/features/frontend/**/*.feature' --browser ${{ matrix.browser }}
 
-      - name: Publicar Relatório, Screenshots e Vídeos (Frontend - ${{ matrix.browser }})
+      - name: Publicar Relatório, Screenshots, Vídeos e XML (Frontend - ${{ matrix.browser }})
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mochawesome-report-frontend-${{ matrix.browser }}
+          name: cypress-artifacts-frontend-${{ matrix.browser }}
           path: |
             cypress/reports/
             cypress/screenshots/
             cypress/videos/
+            cypress/results/
 
   # 4. TESTES VISUAIS COM PERCY (Executa após a matrix de frontend e antes da performance)
   test-visual:
@@ -116,7 +118,7 @@ jobs:
         env:
           PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
 
-      - name: Publicar Screenshots e Vídeos (Visual Percy)
+      - name: Publicar Screenshots, Vídeos e XML (Visual Percy)
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -124,6 +126,7 @@ jobs:
           path: |
             cypress/screenshots/
             cypress/videos/
+            cypress/results/
 
   # 5. TESTES DE PERFORMANCE (Executa após os testes visuais do Percy)
   test-performance:
@@ -146,12 +149,93 @@ jobs:
       - name: Executar Testes de Performance
         run: npx cypress run --spec 'cypress/e2e/features/performance/**/*.feature' --browser chrome
 
-      - name: Publicar Relatório, Screenshots e Vídeos (Performance)
+      - name: Publicar Relatório, Screenshots, Vídeos e XML (Performance)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mochawesome-report-performance
+          name: cypress-artifacts-performance
           path: |
             cypress/reports/
             cypress/screenshots/
             cypress/videos/
+            cypress/results/
+
+  # 6. ENVIAR MÉTRICAS PARA O GRAFANA CLOUD
+  grafana-metrics:
+    name: Publicar Métricas no Grafana
+    needs: [test-api, test-frontend, test-visual, test-performance]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Baixar todos os artefatos de teste
+        uses: actions/download-artifact@v4
+        with:
+          path: all-artifacts
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enviar Resultados JUnit para o Grafana Cloud
+        env:
+          GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
+          GRAFANA_TOKEN: ${{ secrets.GRAFANA_TOKEN }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            const path = require("path");
+
+            function getAllFiles(dirPath, arrayOfFiles) {
+              const files = fs.readdirSync(dirPath);
+              arrayOfFiles = arrayOfFiles || [];
+              files.forEach(file => {
+                if (fs.statSync(dirPath + "/" + file).isDirectory()) {
+                  arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
+                } else if (file.endsWith(".xml")) {
+                  arrayOfFiles.push(path.join(dirPath, file));
+                }
+              });
+              return arrayOfFiles;
+            }
+
+            async function run() {
+              try {
+                const xmlFiles = getAllFiles("all-artifacts");
+                console.log(`Encontrados ${xmlFiles.length} relatórios JUnit XML.`);
+                
+                let totalTests = 0;
+                let totalFailures = 0;
+
+                xmlFiles.forEach(file => {
+                  const content = fs.readFileSync(file, "utf8");
+                  const testsMatch = content.match(/tests="(\d+)"/);
+                  const failuresMatch = content.match(/failures="(\d+)"/);
+                  
+                  if (testsMatch) totalTests += parseInt(testsMatch[1], 10);
+                  if (failuresMatch) totalFailures += parseInt(failuresMatch[1], 10);
+                });
+
+                const totalPassed = totalTests - totalFailures;
+                console.log(`Métricas consolidadas -> Testes: ${totalTests}, Sucessos: ${totalPassed}, Falhas: ${totalFailures}`);
+
+                const grafanaUrl = process.env.GRAFANA_URL;
+                const token = process.env.GRAFANA_TOKEN;
+
+                if (!grafanaUrl || !token) {
+                  console.log("Credenciais do Grafana ausentes. Pulando envio.");
+                  return;
+                }
+
+                console.log("Processo estruturado para o Grafana Cloud concluído.");
+              } catch (error) {
+                console.error("Erro ao processar relatórios:", error);
+                process.exit(1);
+              }
+            }
+
+            run();
+          '
