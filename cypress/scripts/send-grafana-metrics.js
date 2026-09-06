@@ -34,37 +34,63 @@ async function run() {
     const totalPassed = totalTests - totalFailures;
     console.log("Metricas consolidadas -> Testes: " + totalTests + ", Sucessos: " + totalPassed + ", Falhas: " + totalFailures);
 
-    const metricsPayload = "serverest_tests_total{environment=\"ci\"} " + totalTests + "\n" +
-                           "serverest_tests_passed{environment=\"ci\"} " + totalPassed + "\n" +
-                           "serverest_tests_failures{environment=\"ci\"} " + totalFailures;
+    const nowNano = Date.now() * 1000000;
 
-    const rawUrl = process.env.GRAFANA_URL || "";
-    const rawToken = process.env.GRAFANA_TOKEN || "";
+    const otlpPayload = {
+      resourceMetrics: [
+        {
+          scopeMetrics: [
+            {
+              metrics: [
+                {
+                  name: "serverest_tests_total",
+                  description: "Total de testes executados na CI",
+                  unit: "1",
+                  gauge: {
+                    dataPoints: [{ asInt: totalTests, timeUnixNano: nowNano, attributes: [{ key: "environment", value: { stringValue: "ci" } }] }]
+                  }
+                },
+                {
+                  name: "serverest_tests_passed",
+                  description: "Total de testes com sucesso na CI",
+                  unit: "1",
+                  gauge: {
+                    dataPoints: [{ asInt: totalPassed, timeUnixNano: nowNano, attributes: [{ key: "environment", value: { stringValue: "ci" } }] }]
+                  }
+                },
+                {
+                  name: "serverest_tests_failures",
+                  description: "Total de falhas nos testes na CI",
+                  unit: "1",
+                  gauge: {
+                    dataPoints: [{ asInt: totalFailures, timeUnixNano: nowNano, attributes: [{ key: "environment", value: { stringValue: "ci" } }] }]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    };
 
-    // Mantém estritamente apenas caracteres válidos para URLs (Remove quebras de linha, espaços, aspas e lixo de secrets)
-    const grafanaUrl = (rawUrl.match(/https?:\/\/[^\s"'`<>]+/g) || [rawUrl])[0].trim();
-    const token = rawToken.replace(/[\r\n\s"'`<>]/g, "").trim();
+    const endpointUrl = "https://otlp-gateway-prod-sa-east-1.grafana.net/otlp/v1/metrics";
+    const apiKey = process.env.GRAFANA_TOKEN || "";
+    // O Grafana OTLP aceita autenticação básica onde o usuário é o ID (1819630) e a senha é o token glc_...
+    const credentials = Buffer.from(`1819630:${apiKey}`).toString("base64");
 
-    console.log("URL tratada com sucesso. Comprimento final:", grafanaUrl.length);
-
-    if (!grafanaUrl || !token) {
-      console.log("Credenciais do Grafana ausentes ou vazias. Pulando envio.");
-      return;
-    }
-
-    console.log("Enviando metricas para o endpoint do Prometheus Remote Write...");
+    console.log("Enviando metricas OTLP para o Grafana Cloud...");
     
-    const response = await fetch(grafanaUrl, {
+    const response = await fetch(endpointUrl, {
       method: "POST",
       headers: {
-        "Content-Type": "text/plain",
-        "Authorization": "Bearer " + token
+        "Content-Type": "application/json",
+        "Authorization": `Basic ${credentials}`
       },
-      body: metricsPayload
+      body: JSON.stringify(otlpPayload)
     });
 
     if (response.ok) {
-      console.log("Metricas enviadas com sucesso para o Grafana Cloud!");
+      console.log("Metricas OTLP enviadas com sucesso para o Grafana Cloud!");
     } else {
       const errorText = await response.text();
       console.warn("Aviso ao enviar metricas:", response.status, errorText);
