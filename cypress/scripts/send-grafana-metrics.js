@@ -17,26 +17,32 @@ function getAllFiles(dirPath, arrayOfFiles) {
 async function run() {
   try {
     const xmlFiles = getAllFiles("all-artifacts");
-    console.log("Encontrados " + xmlFiles.length + " relatorios JUnit XML.");
+    console.log("Encontrados " + xmlFiles.length + " relatórios JUnit XML.");
     
     let totalTests = 0;
     let totalFailures = 0;
 
     xmlFiles.forEach(file => {
       const content = fs.readFileSync(file, "utf8");
-      const testsMatch = content.match(/tests="(\d+)"/);
-      const failuresMatch = content.match(/failures="(\d+)"/);
       
-      if (testsMatch) totalTests += parseInt(testsMatch[1], 10);
-      if (failuresMatch) totalFailures += parseInt(failuresMatch[1], 10);
+      // Isola a tag raiz <testsuites> para garantir a leitura do total consolidado do arquivo
+      const rootTagMatch = content.match(/<testsuites[^>]*>/);
+      
+      if (rootTagMatch) {
+        const rootTag = rootTagMatch[0];
+        const testsMatch = rootTag.match(/tests="(\d+)"/);
+        const failuresMatch = rootTag.match(/failures="(\d+)"/);
+        
+        if (testsMatch) totalTests += parseInt(testsMatch[1], 10);
+        if (failuresMatch) totalFailures += parseInt(failuresMatch[1], 10);
+      }
     });
 
     const totalPassed = totalTests - totalFailures;
-    console.log("Metricas consolidadas -> Testes: " + totalTests + ", Sucessos: " + totalPassed + ", Falhas: " + totalFailures);
+    console.log("Métricas consolidadas -> Testes: " + totalTests + ", Sucessos: " + totalPassed + ", Falhas: " + totalFailures);
 
     const nowNano = Date.now() * 1000000;
 
-    // Usando nomes que evitam a inferencia automatica de _ratio pelo ecossistema OTLP/Prometheus
     const otlpPayload = {
       resourceMetrics: [
         {
@@ -78,7 +84,7 @@ async function run() {
     const apiKey = process.env.GRAFANA_TOKEN || "";
     const credentials = Buffer.from(`1819630:${apiKey}`).toString("base64");
 
-    console.log("Enviando metricas OTLP ajustadas para o Grafana Cloud...");
+    console.log("Enviando métricas OTLP ajustadas para o Grafana Cloud...");
     
     const response = await fetch(endpointUrl, {
       method: "POST",
@@ -90,14 +96,14 @@ async function run() {
     });
 
     if (response.ok) {
-      console.log("Metricas OTLP enviadas com sucesso para o Grafana Cloud!");
+      console.log("Métricas OTLP enviadas com sucesso para o Grafana Cloud!");
     } else {
       const errorText = await response.text();
-      console.warn("Aviso ao enviar metricas:", response.status, errorText);
+      console.warn("Aviso ao enviar métricas:", response.status, errorText);
     }
 
   } catch (error) {
-    console.error("Erro ao processar relatorios para o Grafana:", error);
+    console.error("Erro ao processar relatórios para o Grafana:", error);
     process.exit(1);
   }
 }
