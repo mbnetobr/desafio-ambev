@@ -46,3 +46,31 @@ Then('devo ser redirecionado para a minha lista de compras', function () {
 Then('devo visualizar o produto listado na tela', function () {
   CarrinhoPage.listaProdutos.should('be.visible');
 });
+
+When('solicitar a limpeza da lista de compras', function () {
+  CarrinhoPage.limparListaCompras();
+});
+
+Then('a lista de compras deve ficar vazia', function () {
+  CarrinhoPage.validarListaVazia();
+});
+
+When('eu acessar diretamente a minha lista de compras vazia', function () {
+  CarrinhoPage.visitarListaCompras();
+});
+
+When('tentar prosseguir com a compra', function () {
+  CarrinhoPage.limparListaCompras();
+});
+
+Then('devo visualizar a mensagem informando que o carrinho está vazio', function () {
+  CarrinhoPage.validarMensagemCarrinhoVazio();
+});
+
+When('solicitar o acréscimo da quantidade do produto na lista', function () {
+  CarrinhoPage.aumentarQuantidadeProduto();
+});
+
+Then('devo visualizar a quantidade atualizada do produto na tela', function () {
+  CarrinhoPage.validarQuantidadeAtualizada();
+});
