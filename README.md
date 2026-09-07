@@ -2,6 +2,12 @@
 
 Este repositório contém a solução completa de testes automatizados para a plataforma **ServeRest** (API e Frontend Web), utilizando **Cypress v13**, **Cucumber (BDD)**, **Page Object Model (POM)**, **AJV Schema Validation** e integração contínua via **GitHub Actions**.
 
+## Demonstração em Vídeo
+
+Assista ao vídeo explicativo detalhando a arquitetura, a suíte de testes e o funcionamento completo do projeto:
+
+- [🔗 Acessar Vídeo de Apresentação no Google Drive](https://drive.google.com/file/d/18SWPBW9BiKrv1DRe-YqpZx8XNHaQ1U4y/view?usp=sharing)
+
 ---
 
 ## Arquitetura e Padrões de Projeto
