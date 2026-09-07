@@ -34,6 +34,14 @@ ambev/
 │   │           ├── cadastro.feature
 │   │           ├── produtos.feature
 │   │           └── carrinho.feature
+│   │       └── Performance/         # BDDs de Testes de Performance 
+│   │           ├── cadastro.feature
+│   │           ├── produtos.feature
+│   │           └── carrinho.feature
+│   │       └── Visual/              # BDDs de Testes Visuais
+│   │           ├── cadastro.feature
+│   │           ├── produtos.feature
+│   │           └── carrinho.feature
 │   ├── fixtures/
 │   │   └── schemas/                 # Contratos JSON Schema para AJV
 │   │       ├── usuario-schema.json
@@ -52,6 +60,8 @@ ambev/
 │       ├── step_definitions/        # Implementação dos Passos BDD
 │       │   ├── api/
 │       │   └── frontend/
+│       │   ├── performance/
+│       │   └── visuais/
 │       ├── commands.js              # Comandos Customizados Cypress
 │       └── e2e.js                   # Setup Global de Suporte
 ├── .cypress-cucumber-preprocessorrc.json
@@ -86,8 +96,21 @@ ambev/
 
 ## Esteira de CI/CD (GitHub Actions)
 
+<img width="1048" height="165" alt="Captura de Tela 2026-09-07 às 00 19 52" src="https://github.com/user-attachments/assets/4d839187-b1ea-4e27-bd32-0b97255e78d8" />
+
+
 - A cada push ou pull_request enviado para as branches main ou master, o GitHub Actions dispara automaticamente o pipeline (e2e-pipeline.yml), realizando:
 - Instalação limpa do ambiente e dependências (npm ci).
 - Validação do código estático (npm run lint).
-- Execução completa da suíte de testes (npm run test:all).
+- Execução de Testes de API como pré condição para demais testes.
+- Execução de Testes de Frontend, Matriz de Browsers: Chrome, Electron e Edge.
+- Execução de Testes de Performance com plugin Cypress Perfromance.
+- Execução de Testes Visuais com Percy.
 - Publicação dos relatórios do Mochawesome como Artefatos da Action.
+- Envio de resultados dos testes para o dashboard no Grafana
+
+## Grafana - Gráficos com Resultados dos Testes
+
+<img width="1458" height="592" alt="Captura de Tela 2026-09-07 às 00 23 02" src="https://github.com/user-attachments/assets/5952953b-ee01-4dd4-84ec-e5251d611d76" />
+
+Link do Dashboard: https://petiterisotto2669.grafana.net/public-dashboards/503bc628017645d5828d98aca5cd8bfd?from=now-3h&to=now&timezone=browser 
