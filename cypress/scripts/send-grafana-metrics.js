@@ -24,8 +24,6 @@ async function run() {
 
     xmlFiles.forEach(file => {
       const content = fs.readFileSync(file, "utf8");
-      
-      // Isola a tag raiz <testsuites> para garantir a leitura do total consolidado do arquivo
       const rootTagMatch = content.match(/<testsuites[^>]*>/);
       
       if (rootTagMatch) {
@@ -42,6 +40,12 @@ async function run() {
     console.log("Métricas consolidadas -> Testes: " + totalTests + ", Sucessos: " + totalPassed + ", Falhas: " + totalFailures);
 
     const nowNano = Date.now() * 1000000;
+    const runId = process.env.GITHUB_RUN_ID || "execucao_local";
+
+    const commonAttributes = [
+      { key: "environment", value: { stringValue: "ci" } },
+      { key: "run_id", value: { stringValue: runId } }
+    ];
 
     const otlpPayload = {
       resourceMetrics: [
@@ -54,7 +58,7 @@ async function run() {
                   description: "Total de testes executados na CI",
                   unit: "{tests}",
                   gauge: {
-                    dataPoints: [{ asInt: totalTests, timeUnixNano: nowNano, attributes: [{ key: "environment", value: { stringValue: "ci" } }] }]
+                    dataPoints: [{ asInt: totalTests, timeUnixNano: nowNano, attributes: commonAttributes }]
                   }
                 },
                 {
@@ -62,7 +66,7 @@ async function run() {
                   description: "Total de testes com sucesso na CI",
                   unit: "{tests}",
                   gauge: {
-                    dataPoints: [{ asInt: totalPassed, timeUnixNano: nowNano, attributes: [{ key: "environment", value: { stringValue: "ci" } }] }]
+                    dataPoints: [{ asInt: totalPassed, timeUnixNano: nowNano, attributes: commonAttributes }]
                   }
                 },
                 {
@@ -70,7 +74,7 @@ async function run() {
                   description: "Total de falhas nos testes na CI",
                   unit: "{tests}",
                   gauge: {
-                    dataPoints: [{ asInt: totalFailures, timeUnixNano: nowNano, attributes: [{ key: "environment", value: { stringValue: "ci" } }] }]
+                    dataPoints: [{ asInt: totalFailures, timeUnixNano: nowNano, attributes: commonAttributes }]
                   }
                 }
               ]
@@ -84,7 +88,7 @@ async function run() {
     const apiKey = process.env.GRAFANA_TOKEN || "";
     const credentials = Buffer.from(`1819630:${apiKey}`).toString("base64");
 
-    console.log("Enviando métricas OTLP ajustadas para o Grafana Cloud...");
+    console.log("Enviando métricas OTLP com run_id para o Grafana Cloud...");
     
     const response = await fetch(endpointUrl, {
       method: "POST",
@@ -96,7 +100,7 @@ async function run() {
     });
 
     if (response.ok) {
-      console.log("Métricas OTLP enviadas com sucesso para o Grafana Cloud!");
+      console.log("Métricas OTLP enviadas com sucesso!");
     } else {
       const errorText = await response.text();
       console.warn("Aviso ao enviar métricas:", response.status, errorText);
