@@ -6,10 +6,8 @@ import AuthService from '../../../services/AuthService';
 Given('que eu esteja autenticado no sistema via API', function () {
   AuthService.obterTokenAdmin().then((token) => {
     this.authToken = token;
-    cy.visit('/login', {
-      onBeforeLoad(win) {
-        win.localStorage.setItem('serverest/userToken', token);
-      }
+    cy.window().then((win) => {
+      win.localStorage.setItem('serverest/userToken', token);
     });
   });
 });
@@ -36,4 +34,23 @@ When('solicitar a exclusão do produto criado', function () {
 
 Then('o produto não deve mais ser exibido na tabela', function () {
   ProdutosPage.validarProdutoAusenteNaTabela(this.produto.nome);
+});
+
+When('tentar cadastrar um novo produto com o mesmo nome do produto existente', function () {
+  ProdutosPage.clicarEmCadastrarProduto();
+  ProdutosPage.preencherFormularioProduto(this.produto.nome, this.produto.preco, this.produto.descricao, this.produto.quantidade);
+  ProdutosPage.submeterCadastroProduto();
+});
+
+Then('devo visualizar a mensagem de erro informando que o produto já possui esse nome', function () {
+  ProdutosPage.alertMensagem.should('contain.text', 'Já existe produto com esse nome');
+});
+
+When('tentar cadastrar um novo produto deixando os campos em branco', function () {
+  ProdutosPage.clicarEmCadastrarProduto();
+  ProdutosPage.submeterCadastroProduto();
+});
+
+Then('devo visualizar as mensagens de obrigatoriedade nos campos do produto', function () {
+  ProdutosPage.alertMensagem.should('be.visible');
 });

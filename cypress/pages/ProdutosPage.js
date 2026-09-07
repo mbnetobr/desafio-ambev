@@ -1,23 +1,43 @@
 class ProdutosPage {
-  get tabelaProdutos() { return cy.get('table tbody'); }
-  get linhasTabela() { return cy.get('table tbody tr'); }
+  // Elementos (Locators)
+  get btnCadastrarProdutos() { return cy.get('[data-testid="cadastrar-produtos"]'); }
+  get inputNome() { return cy.get('[data-testid="nome"]'); }
+  get inputPreco() { return cy.get('[data-testid="preco"]'); }
+  get inputDescricao() { return cy.get('[data-testid="descricao"]'); }
+  get inputQuantidade() { return cy.get('[data-testid="quantity"]'); }
+  get btnSalvar() { return cy.get('[data-testid="cadastarProdutos"]'); }
+  get alertMensagem() { return cy.get('.alert'); }
 
+  // Ações (Methods)
   visitarTelaProdutos() {
     cy.visit('/admin/listarprodutos');
   }
 
-  validarProdutoNaTabela(nomeProduto) {
-    this.tabelaProdutos.should('contain.text', nomeProduto);
+  clicarEmCadastrarProduto() {
+    cy.visit('/admin/cadastrarprodutos');
   }
 
-  excluirProdutoPorNome(nomeProduto) {
-    this.linhasTabela.contains('td', nomeProduto).parent('tr').within(() => {
-      cy.get('button').contains('Excluir').click();
-    });
+  preencherFormularioProduto(nome, preco, descricao, quantidade) {
+    this.inputNome.type(nome);
+    this.inputPreco.type(preco);
+    this.inputDescricao.type(descricao);
+    this.inputQuantidade.type(quantidade);
+  }
+
+  submeterCadastroProduto() {
+    this.btnSalvar.click();
+  }
+
+  validarProdutoNaTabela(nomeProduto) {
+    cy.contains(nomeProduto).should('be.visible');
   }
 
   validarProdutoAusenteNaTabela(nomeProduto) {
-    this.tabelaProdutos.should('not.contain.text', nomeProduto);
+    cy.contains(nomeProduto).should('not.exist');
+  }
+
+  excluirProdutoPorNome(nomeProduto) {
+    cy.contains('tr, .card, div', nomeProduto).find('button').contains('Excluir').click();
   }
 }
 
